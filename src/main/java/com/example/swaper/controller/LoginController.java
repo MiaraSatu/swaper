@@ -7,9 +7,12 @@ import com.example.swaper.repository.MemberShipRepository;
 import com.example.swaper.repository.MessageRepository;
 import com.example.swaper.service.DBUserService;
 import com.example.swaper.service.JwtService;
+import com.nimbusds.jwt.JWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -172,5 +175,11 @@ public class LoginController {
     @RequestMapping("/secret_page")
     public String testSecure() {
         return "Welcome to the secret page";
+    }
+
+    @GetMapping("/friends")
+    public List<DBUser> testFriends(@AuthenticationPrincipal Jwt jwt) {
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        return userService.getFriends(subject);
     }
 }
