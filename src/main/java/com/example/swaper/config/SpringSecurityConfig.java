@@ -25,7 +25,7 @@ import javax.crypto.spec.SecretKeySpec;
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig {
-    private String JWT_KEY = "onetwothree123";
+    private String JWT_KEY = "onetwothreefourfivesixsevenheightnenten";
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
@@ -37,7 +37,7 @@ public class SpringSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/before_start").permitAll();
+                    auth.requestMatchers("/before_start/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .httpBasic(Customizer.withDefaults())
