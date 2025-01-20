@@ -11,6 +11,7 @@ public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    private String content;
     private String type;
     private Date createdAt;
     private Date updatedAt;
@@ -30,6 +31,14 @@ public class Message {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public String getType() {
