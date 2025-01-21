@@ -1,13 +1,9 @@
 package com.example.swaper.controller;
 
 import com.example.swaper.model.*;
-import com.example.swaper.repository.BoxRepository;
-import com.example.swaper.repository.FriendShipRepository;
-import com.example.swaper.repository.MemberShipRepository;
-import com.example.swaper.repository.MessageRepository;
+import com.example.swaper.repository.*;
 import com.example.swaper.service.DBUserService;
 import com.example.swaper.service.JwtService;
-import com.nimbusds.jwt.JWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
