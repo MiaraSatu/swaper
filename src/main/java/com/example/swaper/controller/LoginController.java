@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.Member;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -73,12 +76,22 @@ public class LoginController {
         userOneTwo.setInvitationSeen(true);
         friendShipRepository.save(userOneTwo);
 
+        FriendShip userTwoThree = new FriendShip();
+        userTwoThree.setSender(userThree);
+        userTwoThree.setReceiver(userTwo);
+        userTwoThree.setAccepted(true);
+        userTwoThree.setInvitationSeen(true);
+        friendShipRepository.save(userTwoThree);
+
         // message initialization
         Message message1 = new Message();
         message1.setContent("First message");
         message1.setType("sample");
         message1.setSender(userTwo);
         message1.setReceiver(userThree);
+        Instant now = Instant.now();
+        Date cat1 = Date.from(now);
+        message1.setCreatedAt(cat1);
         messageRepository.save(message1);
 
         Message message2 = new Message();
@@ -87,7 +100,18 @@ public class LoginController {
         message2.setSender(userThree);
         message2.setReceiver(userTwo);
         message2.setReplyTo(message1);
+        Date cat2 = Date.from(now.plus(1, ChronoUnit.MINUTES));
+        message2.setCreatedAt(cat2);
         messageRepository.save(message2);
+
+        Message message3 = new Message();
+        message3.setContent("Hello john! how are you?");
+        message3.setType("sample");
+        message3.setSender(userOne);
+        message3.setReceiver(userTwo);
+        Date cat3 = Date.from(now.plus(15, ChronoUnit.MINUTES));
+        message3.setCreatedAt(cat3);
+        messageRepository.save(message3);
 
         // Box initialization
         Box box1 = new Box();
@@ -119,6 +143,8 @@ public class LoginController {
         inboxmess1.setType("inbox");
         inboxmess1.setSender(userTwo);
         inboxmess1.setBoxReceiver(box1);
+        Date catim1 = Date.from(now.plus(2, ChronoUnit.MINUTES));
+        inboxmess1.setCreatedAt(catim1);
         messageRepository.save(inboxmess1);
 
         Message inboxmess2 = new Message();
@@ -126,6 +152,8 @@ public class LoginController {
         inboxmess2.setType("inbox");
         inboxmess2.setSender(userOne);
         inboxmess2.setBoxReceiver(box1);
+        Date catim2 = Date.from(now.plus(3, ChronoUnit.MINUTES));
+        inboxmess2.setCreatedAt(catim2);
         messageRepository.save(inboxmess2);
 
         Message inboxmess3 = new Message();
@@ -133,6 +161,8 @@ public class LoginController {
         inboxmess3.setType("inbox");
         inboxmess3.setSender(userThree);
         inboxmess3.setBoxReceiver(box1);
+        Date catim3 = Date.from(now.plus(4, ChronoUnit.MINUTES));
+        inboxmess3.setCreatedAt(catim3);
         messageRepository.save(inboxmess3);
 
         return "Data initialized successfully";
