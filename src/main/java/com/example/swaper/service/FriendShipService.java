@@ -17,4 +17,8 @@ public class FriendShipService {
         return friendShipRepository.findBySenderOrReceiver(subject, subject);
     }
 
+    public List<FriendShip> searchByUserName(String keyword, DBUser subject) {
+        return friendShipRepository.searchByUserName(keyword, subject);
+    }
+
 }
