@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class DBUserService {
@@ -62,6 +61,16 @@ public class DBUserService {
             }
         }
         return friends;
+    }
+
+    public List<DBUser> searchDiscusser(String kw, DBUser subject) {
+        return friendShipService.searchByUserName(kw, subject)
+            .stream().map(friendShip -> {
+                DBUser sender = friendShip.getSender();
+                if(sender.getId() == subject.getId())
+                    return friendShip.getReceiver();
+                return sender;
+            }).toList();
     }
 
 }
