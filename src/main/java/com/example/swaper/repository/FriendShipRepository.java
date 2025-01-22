@@ -13,6 +13,12 @@ import java.util.List;
 public interface FriendShipRepository extends JpaRepository<FriendShip, Integer> {
     public List<FriendShip> findBySenderOrReceiver(DBUser sender, DBUser receiver);
 
+    public List<FriendShip> findByReceiverAndIsAccepted(DBUser receiver, boolean isAccepted);
+
+    public List<FriendShip> findBySenderAndIsAccepted(DBUser sender, boolean isAccepted);
+
+    public FriendShip findFirstBySenderAndReceiverOrSenderAndReceiver(DBUser sender1, DBUser receiver1, DBUser sender2, DBUser receiver2);
+
     @Query("SELECT f FROM FriendShip f JOIN DBUser u ON (f.sender = u AND f.receiver = :subject)"+
         "OR (f.receiver = u AND f.sender = :subject) WHERE u.name LIKE CONCAT('%', :kw, '%')"
     )

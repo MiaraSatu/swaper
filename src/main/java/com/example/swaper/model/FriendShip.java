@@ -11,11 +11,12 @@ public class FriendShip {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private boolean isAccepted;
+    private boolean isAccepted = false;
+    private boolean isRefused = false;
     private String invitationText;
     private String refusalText;
-    private boolean isInvitationSeen;
-    private boolean isRefusalSeen;
+    private boolean isInvitationSeen = false;
+    private boolean isRefusalSeen = false;
     private Date createdAt;
     private Date updatedAy;
     @ManyToOne
@@ -37,6 +38,14 @@ public class FriendShip {
 
     public void setAccepted(boolean accepted) {
         isAccepted = accepted;
+    }
+
+    public boolean isRefused() {
+        return isRefused;
+    }
+
+    public void setRefused(boolean refused) {
+        isRefused = refused;
     }
 
     public String getInvitationText() {
