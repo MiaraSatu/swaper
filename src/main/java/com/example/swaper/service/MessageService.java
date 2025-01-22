@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +16,9 @@ public class MessageService {
     private MessageRepository messageRepository;
 
     @Autowired
+    private PaginatorService<Message> messagePaginatorService;
+
+    @Autowired
     @Lazy
     private DBUserService userService;
 
@@ -24,14 +26,17 @@ public class MessageService {
         return messageRepository.countBySenderAndReceiverOrSenderAndReceiver(user1, user2, user2, user1);
     }
 
-    public List<Message> getDiscussions(DBUser subject) {
+    public List<Message> getDiscussions(DBUser subject, Integer page, long limit) {
         List<DBUser> friends = userService.getFriends(subject);
         List<Message> messages = new ArrayList<>();
+        // associer chaque friend à sa dernier message avec le subject
         for(DBUser friend: friends) {
             Message lastMessage = this.getLastMessageExchanged(subject, friend);
-            messages.add(lastMessage);
+            if(lastMessage != null) messages.add(lastMessage);
         }
-        return messages.stream().sorted((e1, e2) ->  Long.compare(e2.getCreatedAt().getTime(), e1.getCreatedAt().getTime())).toList();
+        // trier par order de la date de création les messages
+        messages = messages.stream().sorted((e1, e2) -> Long.compare(e2.getCreatedAt().getTime(), e1.getCreatedAt().getTime())).toList();
+        return messagePaginatorService.paginate(messages, page, limit);
     }
 
     public Message getLastMessageExchanged(DBUser subject, DBUser friend) {
