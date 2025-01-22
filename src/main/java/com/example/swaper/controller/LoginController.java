@@ -4,6 +4,7 @@ import com.example.swaper.model.*;
 import com.example.swaper.repository.*;
 import com.example.swaper.service.DBUserService;
 import com.example.swaper.service.JwtService;
+import com.example.swaper.service.MemberShipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,6 +44,9 @@ public class LoginController {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private MemberShipService memberShipService;
 
     @GetMapping("/before_start")
     public String sayHello() {
@@ -100,7 +104,7 @@ public class LoginController {
         message2.setSender(userThree);
         message2.setReceiver(userTwo);
         message2.setReplyTo(message1);
-        Date cat2 = Date.from(now.plus(1, ChronoUnit.MINUTES));
+        Date cat2 = Date.from(now.plus(20, ChronoUnit.MINUTES));
         message2.setCreatedAt(cat2);
         messageRepository.save(message2);
 
@@ -207,5 +211,10 @@ public class LoginController {
     public List<DBUser> testFriends(@AuthenticationPrincipal Jwt jwt) {
         DBUser subject = userService.get(jwt.getClaim("sub"));
         return userService.getFriends(subject);
+    }
+
+    @RequestMapping("/memberships/test")
+    public List<MemberShip> testMemberShipAddition() {
+        return memberShipService.getAll();
     }
 }
