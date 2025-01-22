@@ -28,12 +28,8 @@ public class MessageController {
 
     @GetMapping("/discussions")
     public Map<String, Object> getDiscussions(@AuthenticationPrincipal Jwt jwt, @Param("page") Integer page) {
-        page = (page == null || page == 0) ? 1 : page;
         long listLimit = 10L;
         DBUser subject = userService.get(jwt.getClaim("sub"));
-        Map<String, Object> response = new HashMap<>();
-        response.put("data", messageService.getDiscussions(subject, page, listLimit));
-        response.put("seeMoreUlr", "/api/discussions?page="+(page+1));
-        return response;
+        return messageService.getPaginedDiscussions(subject, "/api/discussions", page, listLimit);
     }
 }
