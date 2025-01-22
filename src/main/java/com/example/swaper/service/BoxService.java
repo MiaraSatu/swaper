@@ -49,6 +49,14 @@ public class BoxService {
         }
     }
 
+    public void removeUser(Box box, DBUser user) {
+        // s'il est membre et n'est pas admin
+        if(checkMember(box, user) && !checkMemberIsAdmin(box, user)) {
+           MemberShip memberShip = memberShipRepository.findFirstByBoxAndOwner(box, user);
+           memberShipRepository.delete(memberShip);
+        }
+    }
+
     public boolean checkMemberIsAdmin(Box box, DBUser member) {
         return null != memberShipRepository.findFirstByBoxAndOwnerAndIsAdmin(box, member,true);
     }
