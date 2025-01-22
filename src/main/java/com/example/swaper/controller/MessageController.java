@@ -10,6 +10,8 @@ import com.example.swaper.service.MemberShipService;
 import com.example.swaper.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -50,15 +52,15 @@ public class MessageController {
     }
 
     @PostMapping("/discussion/box/{boxId}/add_members")
-    public String addUsersToBox(@AuthenticationPrincipal Jwt jwt, @RequestBody ArrayList<Integer> membersId, @PathVariable int boxId) {
+    public ResponseEntity<String> addUsersToBox(@AuthenticationPrincipal Jwt jwt, @RequestBody ArrayList<Integer> membersId, @PathVariable int boxId) {
         DBUser admin = userService.get(jwt.getClaim("sub"));
         Box box = boxService.get(boxId);
         boolean authorized = boxService.checkMemberIsAdmin(box, admin);
         if(authorized) {
             List<DBUser> members = membersId.stream().map(id -> userService.get(id)).toList();
             boxService.addUsers(box, members);
-            return "New members added successfully";
+            return new ResponseEntity<>("New members added successfully", HttpStatus.OK);
         }
-        return "You are not authorized to add new member";
+        return new ResponseEntity<>("You are not authorized to add new member", HttpStatus.FORBIDDEN);
     }
 }
