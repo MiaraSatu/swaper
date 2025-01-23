@@ -59,7 +59,7 @@ public class DBUserService {
     public List<DBUser> getFriends(DBUser subject) {
         List<FriendShip> friendShips = friendShipService.getFriendShipRelatedTo(subject)
             .stream()
-            .sorted((e1, e2) -> Long.compare(e2.getUpdatedAy().getTime() ,e1.getUpdatedAy().getTime()))
+            .sorted((e1, e2) -> Long.compare(e2.getUpdatedAt().getTime() ,e1.getUpdatedAt().getTime()))
             .toList();
         List<DBUser> friends = new ArrayList<>();
         for (FriendShip friendShip : friendShips) {

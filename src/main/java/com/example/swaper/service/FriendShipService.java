@@ -41,7 +41,7 @@ public class FriendShipService {
     public void accept(DBUser subject, FriendShip friendShip) {
         if(friendShip.getReceiver().getId() == subject.getId()) {
             friendShip.setAccepted(true);
-            friendShip.setUpdatedAy(Date.from(Instant.now()));
+            friendShip.setUpdatedAt(Date.from(Instant.now()));
             friendShipRepository.save(friendShip);
         }
     }

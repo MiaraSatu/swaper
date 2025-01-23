@@ -18,7 +18,7 @@ public class FriendShip {
     private boolean isInvitationSeen = false;
     private boolean isRefusalSeen = false;
     private Date createdAt;
-    private Date updatedAy;
+    private Date updatedAt;
     @ManyToOne
     private DBUser sender;
     @ManyToOne
@@ -104,11 +104,11 @@ public class FriendShip {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAy() {
-        return updatedAy;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdatedAy(Date updatedAy) {
-        this.updatedAy = updatedAy;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

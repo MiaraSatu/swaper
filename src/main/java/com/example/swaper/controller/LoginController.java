@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.lang.reflect.Member;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -79,7 +78,7 @@ public class LoginController {
         userOneTwo.setAccepted(true);
         userOneTwo.setInvitationSeen(true);
         userOneTwo.setCreatedAt(Date.from(Instant.now()));
-        userOneTwo.setUpdatedAy(Date.from(Instant.now()));
+        userOneTwo.setUpdatedAt(Date.from(Instant.now()));
         friendShipRepository.save(userOneTwo);
 
         FriendShip userTwoThree = new FriendShip();
@@ -88,7 +87,7 @@ public class LoginController {
         userTwoThree.setAccepted(true);
         userTwoThree.setInvitationSeen(true);
         userTwoThree.setCreatedAt(Date.from(Instant.now().plus(1, ChronoUnit.MINUTES)));
-        userTwoThree.setUpdatedAy(Date.from(Instant.now().plus(3, ChronoUnit.MINUTES)));
+        userTwoThree.setUpdatedAt(Date.from(Instant.now().plus(3, ChronoUnit.MINUTES)));
         friendShipRepository.save(userTwoThree);
 
         // message initialization
