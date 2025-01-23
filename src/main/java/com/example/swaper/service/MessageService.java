@@ -60,6 +60,19 @@ public class MessageService {
         return messageRepository.findFirstBySenderAndReceiverOrSenderAndReceiverOrderByCreatedAtDesc(subject, friend, friend, subject);
     }
 
+    public Map<String, Object> getPaginedMessagesExchanged(DBUser subject, String type, int receiverId, String baseUrl, Integer page, long limit) {
+        if(type.equals("sample")) {
+            DBUser friend = userService.get(receiverId);
+            List<Message> messages = messageRepository.findBySenderAndReceiverOrSenderAndReceiverOrderByCreatedAtDesc(subject, friend, friend, subject);
+            return messagePaginatorService.paginate(messages, baseUrl, page, limit);
+        } else if(type.equals("inBox")) {
+            Box box = boxService.get(receiverId);
+            List<Message> messages = messageRepository.findBySenderAndBoxReceiverOrderByCreatedAtDesc(subject, box);
+            return messagePaginatorService.paginate(messages, baseUrl, page, limit);
+        }
+        return null;
+    }
+
     public boolean send(Message message, DBUser sender, int receiverId, String type, Integer replyToId) {
         if(type.equals("inbox")) {
             Box boxReceiver = boxService.get(receiverId);

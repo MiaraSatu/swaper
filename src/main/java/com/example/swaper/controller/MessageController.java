@@ -49,4 +49,13 @@ public class MessageController {
         }
         return new ResponseEntity<>("Message not sent", HttpStatus.BAD_REQUEST);
     }
+
+    @GetMapping("/messages/{receiverId}/{isBox}")
+    public ResponseEntity<Object> getMessages(@AuthenticationPrincipal Jwt jwt, @PathVariable int receiverId, @PathVariable boolean isBox, @Param("page") Integer page) {
+        long limit = 10;
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        String type = isBox ? "inBox" : "sample";
+        Map<String, Object> result = messageService.getPaginedMessagesExchanged(subject, type, receiverId, "/api/messages/"+receiverId+"/"+(isBox?1:0), page, limit);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 }
