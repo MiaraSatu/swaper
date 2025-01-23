@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,5 +31,11 @@ public class DBUserController {
     public List<DBUser> searchDiscusser(@Param("kw") String kw, @AuthenticationPrincipal Jwt jwt) {
         DBUser subject = dbUserService.get(jwt.getClaim("sub"));
         return dbUserService.searchDiscusser(kw, subject);
+    }
+
+    @GetMapping("/{id}")
+    public DBUser getUser(@PathVariable int id) {
+        DBUser user = dbUserService.get(id);
+        return user;
     }
 }
