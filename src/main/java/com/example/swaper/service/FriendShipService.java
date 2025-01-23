@@ -23,6 +23,10 @@ public class FriendShipService {
         return friendShipRepository.findById(id).get();
     }
 
+    public FriendShip get(DBUser user1, DBUser user2) {
+        return friendShipRepository.findFirstBySenderAndReceiverOrSenderAndReceiver(user1, user2, user2, user1);
+    }
+
     public void send(DBUser sender, String invitationText, DBUser receiver) {
         if(!checkFriendShip(sender, receiver) && sender.getId() != receiver.getId()) {
             FriendShip friendShip = new FriendShip();
@@ -73,7 +77,7 @@ public class FriendShipService {
     }
 
     public boolean checkFriendShip(DBUser user1, DBUser user2) {
-        return null != friendShipRepository.findFirstBySenderAndReceiverOrSenderAndReceiver(user1, user2, user2, user1);
+        return null != get(user1, user2);
     }
 
 }

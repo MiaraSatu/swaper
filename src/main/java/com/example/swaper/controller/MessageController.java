@@ -1,12 +1,16 @@
 package com.example.swaper.controller;
 
+import com.example.swaper.model.Box;
 import com.example.swaper.model.DBUser;
+import com.example.swaper.model.Message;
 import com.example.swaper.service.BoxService;
 import com.example.swaper.service.DBUserService;
 import com.example.swaper.service.MemberShipService;
 import com.example.swaper.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -36,5 +40,13 @@ public class MessageController {
         return messageService.getPaginedDiscussions(subject, "/api/discussions", page, listLimit);
     }
 
-
+    @PostMapping("/message/{receiverId}/{isBox}")
+    public ResponseEntity<Object> sendMessage(@AuthenticationPrincipal Jwt jwt, @RequestBody Message message, @PathVariable int receiverId, @PathVariable boolean isBox, @Param("reply_to") Integer replyTo) {
+        DBUser sender = userService.get(jwt.getClaim("sub"));
+        String messageType = isBox ? "inbox" : "sample";
+        if(messageService.send(message, sender, receiverId, messageType, replyTo)) {
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Message not sent", HttpStatus.BAD_REQUEST);
+    }
 }

@@ -15,6 +15,7 @@ public class Message {
     private String type;
     private Date createdAt;
     private Date updatedAt;
+    private boolean isSeen = false;
     @ManyToOne
     @JoinColumn(nullable = false)
     private DBUser sender;
@@ -63,6 +64,14 @@ public class Message {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isSeen() {
+        return isSeen;
+    }
+
+    public void setSeen(boolean seen) {
+        isSeen = seen;
     }
 
     public DBUser getSender() {
