@@ -18,6 +18,9 @@ public class DBUserService {
     private FriendShipService friendShipService;
 
     @Autowired
+    private PaginatorService<DBUser> paginatorService;
+
+    @Autowired
     @Lazy
     private MessageService messageService;
 
@@ -54,7 +57,10 @@ public class DBUserService {
     }
 
     public List<DBUser> getFriends(DBUser subject) {
-        List<FriendShip> friendShips = friendShipService.getFriendShipRelatedTo(subject);
+        List<FriendShip> friendShips = friendShipService.getFriendShipRelatedTo(subject)
+            .stream()
+            .sorted((e1, e2) -> Long.compare(e2.getUpdatedAy().getTime() ,e1.getUpdatedAy().getTime()))
+            .toList();
         List<DBUser> friends = new ArrayList<>();
         for (FriendShip friendShip : friendShips) {
             DBUser friend = friendShip.getSender() == subject ? friendShip.getReceiver() : friendShip.getSender();
@@ -63,6 +69,11 @@ public class DBUserService {
             }
         }
         return friends;
+    }
+
+    public Map<String, Object> getPaginedFriends(DBUser subject, String baseUrl, Integer page, long limit) {
+        List<DBUser> friends = this.getFriends(subject);
+        return paginatorService.paginate(friends, baseUrl, page, limit);
     }
 
     public List<DBUser> searchDiscusser(String kw, DBUser subject) {

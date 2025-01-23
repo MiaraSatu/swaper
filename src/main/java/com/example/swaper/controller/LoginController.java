@@ -78,6 +78,8 @@ public class LoginController {
         userOneTwo.setReceiver(userTwo);
         userOneTwo.setAccepted(true);
         userOneTwo.setInvitationSeen(true);
+        userOneTwo.setCreatedAt(Date.from(Instant.now()));
+        userOneTwo.setUpdatedAy(Date.from(Instant.now()));
         friendShipRepository.save(userOneTwo);
 
         FriendShip userTwoThree = new FriendShip();
@@ -85,6 +87,8 @@ public class LoginController {
         userTwoThree.setReceiver(userTwo);
         userTwoThree.setAccepted(true);
         userTwoThree.setInvitationSeen(true);
+        userTwoThree.setCreatedAt(Date.from(Instant.now().plus(1, ChronoUnit.MINUTES)));
+        userTwoThree.setUpdatedAy(Date.from(Instant.now().plus(3, ChronoUnit.MINUTES)));
         friendShipRepository.save(userTwoThree);
 
         // message initialization
