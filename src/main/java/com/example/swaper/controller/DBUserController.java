@@ -8,11 +8,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -34,12 +39,6 @@ public class DBUserController {
         return userService.searchDiscusser(kw, subject);
     }
 
-    @GetMapping("/{id}")
-    public DBUser getUser(@PathVariable int id) {
-        DBUser user = userService.get(id);
-        return user;
-    }
-
     @GetMapping("/{userId}/friends")
     public ResponseEntity<Object> getFriends(@PathVariable int userId, @Param("page") Integer page) {
         long limit = 10L;
@@ -49,5 +48,29 @@ public class DBUserController {
             return new ResponseEntity<>(result, HttpStatus.OK);
         }
         return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/picture")
+    public ResponseEntity<Object> setProfilPicture(@AuthenticationPrincipal Jwt jwt, @RequestParam("file")MultipartFile file) {
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        try {
+            String imageUrl = saveImage(file);
+            subject.setImageUrl(imageUrl);
+            userService.add(subject);
+            return new ResponseEntity<>(subject, HttpStatus.OK);
+        } catch(IOException e) {
+            return new ResponseEntity<>("Image upload error"+ e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private String saveImage(MultipartFile file) throws IOException {
+        Path uploadPath = Paths.get("./uploads/user");
+        if(!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        String fileName = file.getOriginalFilename();
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        return filePath.toString();
     }
 }
