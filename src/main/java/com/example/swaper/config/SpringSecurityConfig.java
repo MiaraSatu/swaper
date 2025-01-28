@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -38,6 +39,8 @@ public class SpringSecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/before_start/**").permitAll();
+                    auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+                    auth.requestMatchers("/login").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .httpBasic(Customizer.withDefaults())

@@ -10,10 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -203,6 +200,11 @@ public class LoginController {
     @PostMapping("/login")
     public String getToken(Authentication authentication) {
         return jwtService.generateToken(authentication);
+    }
+
+    @GetMapping("/api/user")
+    public DBUser getUser(@AuthenticationPrincipal Jwt jwt) {
+        return userService.get(jwt.getClaim("sub"));
     }
 
     @RequestMapping("/secret_page")
