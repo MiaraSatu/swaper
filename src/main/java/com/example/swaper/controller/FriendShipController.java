@@ -37,6 +37,13 @@ public class FriendShipController {
         return friendShipService.getPaginedInvitation(true, subject, "/api/invitations/received", page, limit);
     }
 
+    @GetMapping("/invitations/refused")
+    public Map<String, Object> getRefusedInvitation(@AuthenticationPrincipal Jwt jwt, @Param("page") Integer page) {
+        long limit = 10L;
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        return friendShipService.getPaginedRefusedInvitation(subject, "/api/invitations/refused", page, limit);
+    }
+
     @PostMapping("/user/{userId}/invite")
     public String sendInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int userId, @RequestBody String invitationMessage) {
         DBUser sender = userService.get(jwt.getClaim("sub")),

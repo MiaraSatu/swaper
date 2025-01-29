@@ -1,0 +1,12 @@
+2025-01-29 07:48:25.732155+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "DBUSER" not found (this database is empty); SQL statement:
+insert into dbuser (email,image_url,name,password,role,id) values (?,?,?,?,?,default) [42104-224]
+2025-01-29 07:51:08.106331+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "DBUSER" not found (this database is empty); SQL statement:
+insert into dbuser (email,image_url,name,password,role,id) values (?,?,?,?,?,default) [42104-224]
+2025-01-29 07:51:17.718267+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "DBUSER" not found (this database is empty); SQL statement:
+insert into dbuser (email,image_url,name,password,role,id) values (?,?,?,?,?,default) [42104-224]
+2025-01-29 07:54:39.124510+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "DBUSER" not found (this database is empty); SQL statement:
+insert into dbuser (email,image_url,name,password,role,id) values (?,?,?,?,?,default) [42104-224]

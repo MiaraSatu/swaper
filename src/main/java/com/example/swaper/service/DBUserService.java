@@ -71,9 +71,22 @@ public class DBUserService {
         return friends;
     }
 
+    public List<DBUser> getNotFriends(DBUser subject) {
+        List<DBUser> friends = getFriends(subject);
+        List<DBUser> notFriends = all();
+        notFriends = notFriends.stream().filter(user -> !friends.contains(user)).toList();
+        return notFriends;
+    }
+
+
     public Map<String, Object> getPaginedFriends(DBUser subject, String baseUrl, Integer page, long limit) {
         List<DBUser> friends = this.getFriends(subject);
         return paginatorService.paginate(friends, baseUrl, page, limit);
+    }
+
+    public Map<String, Object> getPaginedNotFriends(DBUser subject, String baseUrl, Integer page, long limit) {
+        List<DBUser> notFriends = this.getNotFriends(subject);
+        return paginatorService.paginate(notFriends, baseUrl, page, limit);
     }
 
     public List<DBUser> searchDiscusser(String kw, DBUser subject) {

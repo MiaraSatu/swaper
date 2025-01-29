@@ -6,6 +6,8 @@ import com.example.swaper.service.DBUserService;
 import com.example.swaper.service.JwtService;
 import com.example.swaper.service.MemberShipService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,6 +18,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class LoginController {
@@ -200,6 +203,20 @@ public class LoginController {
     @PostMapping("/login")
     public String getToken(Authentication authentication) {
         return jwtService.generateToken(authentication);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody Map<String, String> userMap) {
+        DBUser mailOwner = userService.get(userMap.get("email"));
+        if(null != mailOwner)
+            return new ResponseEntity<>("Email already used", HttpStatus.BAD_REQUEST);
+        DBUser user = new DBUser();
+        user.setName(userMap.get("name"));
+        user.setEmail(userMap.get("email"));
+        user.setPassword(passwordEncoder.encode(userMap.get("password")));
+        user.setRole("USER");
+        userService.add(user);
+        return new ResponseEntity<>("Registration successfully", HttpStatus.CREATED);
     }
 
     @GetMapping("/api/user")

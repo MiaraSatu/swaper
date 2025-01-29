@@ -76,6 +76,12 @@ public class FriendShipService {
         return friendShipPaginator.paginate(invitations, baseUrl, page, limit);
     }
 
+    public Map<String, Object> getPaginedRefusedInvitation(DBUser subject, String baseUrl, Integer page, long limit) {
+        List<FriendShip> invitations = friendShipRepository.findBySenderAndIsRefused(subject, false);
+        invitations = invitations.stream().sorted((e1, e2) -> Long.compare(e2.getUpdatedAt().getTime(), e1.getUpdatedAt().getTime())).toList();
+        return friendShipPaginator.paginate(invitations, baseUrl, page, limit);
+    }
+
     public boolean checkFriendShip(DBUser user1, DBUser user2) {
         return null != get(user1, user2);
     }

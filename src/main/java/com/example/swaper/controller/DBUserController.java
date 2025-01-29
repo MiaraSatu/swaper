@@ -33,6 +33,13 @@ public class DBUserController {
         return userService.getMostFrequentedFriends(subject);
     }
 
+    @GetMapping("/suggestions")
+    public Map<String, Object> getNotFriends(@AuthenticationPrincipal Jwt jwt, @Param("page") Integer page) {
+        long limit = 10L;
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        return userService.getPaginedNotFriends(subject, "/api/users/suggestions", page, limit);
+    }
+
     @GetMapping("/discussers/search")
     public List<DBUser> searchDiscusser(@Param("kw") String kw, @AuthenticationPrincipal Jwt jwt) {
         DBUser subject = userService.get(jwt.getClaim("sub"));
@@ -44,7 +51,7 @@ public class DBUserController {
         long limit = 10L;
         DBUser subject = userService.get(userId);
         if(null != subject) {
-            Map<String, Object> result = userService.getPaginedFriends(subject, "/api/"+userId+"/friends", page, limit);
+            Map<String, Object> result = userService.getPaginedFriends(subject, "/api/users/"+userId+"/friends", page, limit);
             return new ResponseEntity<>(result, HttpStatus.OK);
         }
         return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);

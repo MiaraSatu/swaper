@@ -17,6 +17,8 @@ public interface FriendShipRepository extends JpaRepository<FriendShip, Integer>
 
     public List<FriendShip> findBySenderAndIsAccepted(DBUser sender, boolean isAccepted);
 
+    public List<FriendShip> findBySenderAndIsRefused(DBUser receiver, boolean isRefused);
+
     public FriendShip findFirstBySenderAndReceiverOrSenderAndReceiver(DBUser sender1, DBUser receiver1, DBUser sender2, DBUser receiver2);
 
     @Query("SELECT f FROM FriendShip f JOIN DBUser u ON (f.sender = u AND f.receiver = :subject)"+
