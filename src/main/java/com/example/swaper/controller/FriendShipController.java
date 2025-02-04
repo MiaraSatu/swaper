@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,29 +28,47 @@ public class FriendShipController {
     public Map<String, Object> getReceivedInvitation(@AuthenticationPrincipal Jwt jwt,  @Param("page") Integer page) {
         long limit = 10L;
         DBUser subject = userService.get(jwt.getClaim("sub"));
-        return friendShipService.getPaginedInvitation(false, subject, "/api/invitations/received", page, limit);
+        Map<String, Object> pagined = friendShipService.getPaginedInvitation(false, subject, "/api/invitations/received", page, limit);
+        pagined.put("data", ((List<FriendShip>)pagined.get("data")).stream().map(fs -> {
+            userService.complete(fs.getSender(), subject);
+            return fs;
+        }).toList());
+        return pagined;
     }
 
     @GetMapping("/invitations/sent")
     public Map<String, Object> getSentInvitation(@AuthenticationPrincipal Jwt jwt, @Param("page") Integer page) {
         long limit = 10L;
         DBUser subject = userService.get(jwt.getClaim("sub"));
-        return friendShipService.getPaginedInvitation(true, subject, "/api/invitations/received", page, limit);
+        Map<String, Object> pagined = friendShipService.getPaginedInvitation(true, subject, "/api/invitations/received", page, limit);
+        pagined.put("data", ((List<FriendShip>)pagined.get("data")).stream().map(fs -> {
+            userService.complete(fs.getReceiver(), subject);
+            return fs;
+        }).toList());
+        return pagined;
     }
 
     @GetMapping("/invitations/refused")
     public Map<String, Object> getRefusedInvitation(@AuthenticationPrincipal Jwt jwt, @Param("page") Integer page) {
         long limit = 10L;
         DBUser subject = userService.get(jwt.getClaim("sub"));
-        return friendShipService.getPaginedRefusedInvitation(subject, "/api/invitations/refused", page, limit);
+        Map<String, Object> pagined = friendShipService.getPaginedRefusedInvitation(subject, "/api/invitations/refused", page, limit);
+        pagined.put("data", ((List<FriendShip>)pagined.get("data")).stream().map(fs -> {
+            userService.complete(fs.getReceiver(), subject);
+            return fs;
+        }).toList());
+        return pagined;
     }
 
     @PostMapping("/user/{userId}/invite")
-    public String sendInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int userId, @RequestBody String invitationMessage) {
+    public ResponseEntity<Object> sendInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int userId, @RequestBody String invitationMessage) {
         DBUser sender = userService.get(jwt.getClaim("sub")),
                 receiver = userService.get(userId);
-        friendShipService.send(sender, invitationMessage, receiver);
-        return "Invitation sent successfully";
+        FriendShip newFriendShip = friendShipService.send(sender, invitationMessage, receiver);
+        if(null != newFriendShip) {
+            return new ResponseEntity<>(newFriendShip, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Invitation not sent", HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/invitation/{friendShipId}/accept")

@@ -14,6 +14,8 @@ public class DBUser {
     private String imageUrl;
     private String password;
     private String role;
+    @Transient
+    private String friendStatus;
 
     public int getId() {
         return id;
@@ -61,5 +63,13 @@ public class DBUser {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getFriendStatus() {
+        return friendStatus;
+    }
+
+    public void setFriendStatus(String friendStatus) {
+        this.friendStatus = friendStatus;
     }
 }

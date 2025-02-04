@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface FriendShipRepository extends JpaRepository<FriendShip, Integer> {
-    public List<FriendShip> findBySenderOrReceiver(DBUser sender, DBUser receiver);
+    public List<FriendShip> findBySenderOrReceiverAndIsAccepted(DBUser sender, DBUser receiver, boolean isAccepted);
 
     public List<FriendShip> findByReceiverAndIsAccepted(DBUser receiver, boolean isAccepted);
 

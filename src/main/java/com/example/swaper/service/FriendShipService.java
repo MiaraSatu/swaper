@@ -27,15 +27,18 @@ public class FriendShipService {
         return friendShipRepository.findFirstBySenderAndReceiverOrSenderAndReceiver(user1, user2, user2, user1);
     }
 
-    public void send(DBUser sender, String invitationText, DBUser receiver) {
+    public FriendShip send(DBUser sender, String invitationText, DBUser receiver) {
         if(!checkFriendShip(sender, receiver) && sender.getId() != receiver.getId()) {
             FriendShip friendShip = new FriendShip();
             friendShip.setSender(sender);
             friendShip.setReceiver(receiver);
             friendShip.setCreatedAt(Date.from(Instant.now()));
+            friendShip.setUpdatedAt(Date.from(Instant.now()));
             friendShip.setInvitationText(invitationText);
             friendShipRepository.save(friendShip);
+            return friendShip;
         }
+        return null;
     }
 
     public void accept(DBUser subject, FriendShip friendShip) {
@@ -50,6 +53,7 @@ public class FriendShipService {
         if(friendShip.getReceiver().getId() == subject.getId() && !friendShip.isAccepted()) {
             friendShip.setRefused(true);
             friendShip.setRefusalText(refusalText);
+            friendShip.setUpdatedAt(Date.from(Instant.now()));
             friendShipRepository.save(friendShip);
         }
     }
@@ -61,7 +65,7 @@ public class FriendShipService {
     }
 
     public List<FriendShip> getFriendShipRelatedTo(DBUser subject) {
-        return friendShipRepository.findBySenderOrReceiver(subject, subject);
+        return friendShipRepository.findBySenderOrReceiverAndIsAccepted(subject, subject, true);
     }
 
     public List<FriendShip> searchByUserName(String keyword, DBUser subject) {
@@ -77,7 +81,7 @@ public class FriendShipService {
     }
 
     public Map<String, Object> getPaginedRefusedInvitation(DBUser subject, String baseUrl, Integer page, long limit) {
-        List<FriendShip> invitations = friendShipRepository.findBySenderAndIsRefused(subject, false);
+        List<FriendShip> invitations = friendShipRepository.findBySenderAndIsRefused(subject, true);
         invitations = invitations.stream().sorted((e1, e2) -> Long.compare(e2.getUpdatedAt().getTime(), e1.getUpdatedAt().getTime())).toList();
         return friendShipPaginator.paginate(invitations, baseUrl, page, limit);
     }

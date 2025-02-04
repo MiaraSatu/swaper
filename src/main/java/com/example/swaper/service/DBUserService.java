@@ -50,7 +50,10 @@ public class DBUserService {
         frequentedFriends = messageStat.entrySet()
                 .stream()
                 .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
-                .map(Map.Entry::getKey)
+                .map(item -> {
+                    this.complete(item.getKey(), subject);
+                    return item.getKey();
+                })
                 .limit(10)
                 .toList();
         return frequentedFriends;
@@ -74,10 +77,9 @@ public class DBUserService {
     public List<DBUser> getNotFriends(DBUser subject) {
         List<DBUser> friends = getFriends(subject);
         List<DBUser> notFriends = all();
-        notFriends = notFriends.stream().filter(user -> !friends.contains(user)).toList();
+        notFriends = notFriends.stream().filter(user -> !friends.contains(user) && user != subject).toList();
         return notFriends;
     }
-
 
     public Map<String, Object> getPaginedFriends(DBUser subject, String baseUrl, Integer page, long limit) {
         List<DBUser> friends = this.getFriends(subject);
@@ -97,6 +99,33 @@ public class DBUserService {
                     return friendShip.getReceiver();
                 return sender;
             }).toList();
+    }
+
+    public List<DBUser> complete(List<DBUser> users, DBUser currentUser) {
+        return users.stream().map(u -> {
+            this.complete(u, currentUser);
+            return u;
+        }).toList();
+    }
+
+    public void complete(DBUser user, DBUser currentUser) {
+        FriendShip friendShip = friendShipService.get(user, currentUser);
+        if(user.getId() == currentUser.getId()) {
+            user.setFriendStatus("you");
+            return;
+        }
+        if(null != friendShip) {
+            if(friendShip.isAccepted())
+                user.setFriendStatus("friend");
+            else {
+                if(friendShip.getSender().getId() == currentUser.getId())
+                    user.setFriendStatus("sent");
+                else
+                    user.setFriendStatus("received");
+            }
+        } else {
+            user.setFriendStatus("none");
+        }
     }
 
 }
