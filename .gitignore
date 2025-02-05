@@ -34,3 +34,6 @@ build/
 
 ### IMAGE UPLOADS DIRECTORY ###
 /uploads
+
+### DATABASE
+/data/
