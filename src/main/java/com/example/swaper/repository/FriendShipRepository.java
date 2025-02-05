@@ -11,13 +11,15 @@ import java.util.List;
 
 @Repository
 public interface FriendShipRepository extends JpaRepository<FriendShip, Integer> {
-    public List<FriendShip> findBySenderOrReceiverAndIsAccepted(DBUser sender, DBUser receiver, boolean isAccepted);
+    @Query("SELECT f FROM FriendShip f JOIN DBUser u ON (f.sender = u AND f.receiver = :subject) OR (f.sender = :subject AND f.receiver = u)")
+    public List<FriendShip> findAllByUser(@Param("subject") DBUser subject);
+
+    @Query("SELECT f FROM FriendShip f JOIN DBUser u ON (f.sender = u AND f.receiver = :subject) OR (f.sender = :subject AND f.receiver = u) WHERE f.isAccepted = true")
+    public List<FriendShip> findAcceptedByUser(@Param("subject") DBUser subject);
 
     public List<FriendShip> findByReceiverAndIsAccepted(DBUser receiver, boolean isAccepted);
 
     public List<FriendShip> findBySenderAndIsAccepted(DBUser sender, boolean isAccepted);
-
-    public List<FriendShip> findBySenderAndIsRefused(DBUser receiver, boolean isRefused);
 
     public FriendShip findFirstBySenderAndReceiverOrSenderAndReceiver(DBUser sender1, DBUser receiver1, DBUser sender2, DBUser receiver2);
 

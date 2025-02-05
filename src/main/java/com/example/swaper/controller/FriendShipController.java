@@ -48,18 +48,6 @@ public class FriendShipController {
         return pagined;
     }
 
-    @GetMapping("/invitations/refused")
-    public Map<String, Object> getRefusedInvitation(@AuthenticationPrincipal Jwt jwt, @Param("page") Integer page) {
-        long limit = 10L;
-        DBUser subject = userService.get(jwt.getClaim("sub"));
-        Map<String, Object> pagined = friendShipService.getPaginedRefusedInvitation(subject, "/api/invitations/refused", page, limit);
-        pagined.put("data", ((List<FriendShip>)pagined.get("data")).stream().map(fs -> {
-            userService.complete(fs.getReceiver(), subject);
-            return fs;
-        }).toList());
-        return pagined;
-    }
-
     @PostMapping("/user/{userId}/invite")
     public ResponseEntity<Object> sendInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int userId, @RequestBody String invitationMessage) {
         DBUser sender = userService.get(jwt.getClaim("sub")),
@@ -72,29 +60,35 @@ public class FriendShipController {
     }
 
     @GetMapping("/invitation/{friendShipId}/accept")
-    public String acceptInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int friendShipId) {
+    public ResponseEntity<Object> acceptInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int friendShipId) {
         DBUser subject = userService.get(jwt.getClaim("sub"));
         FriendShip friendShip = friendShipService.get(friendShipId);
-        friendShipService.accept(subject, friendShip);
-        return "Invitation accepted successfully";
+        if(null != friendShipService.accept(subject, friendShip)) {
+            return new ResponseEntity<>(friendShip, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Invitation not accepted", HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/invitation/{friendShipId}/refuse")
-    public String refuseInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int friendShipId, @RequestBody String refuseText) {
+    @GetMapping("/invitation/{friendShipId}/refuse")
+    public ResponseEntity<Object> refuseInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int friendShipId) {
         DBUser subject = userService.get(jwt.getClaim("sub"));
         FriendShip friendShip = friendShipService.get(friendShipId);
-        friendShipService.refuse(subject, friendShip, refuseText);
-        return "Invitation refused successfully";
+        DBUser refusedSender = friendShipService.refuse(subject, friendShip);
+        if(null != refusedSender) {
+            return new ResponseEntity<>(refusedSender, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Invitation not refused", HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/invitation/{friendShipId}/cancel")
-    public ResponseEntity<String> cancelInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int friendShipId) {
+    public ResponseEntity<Object> cancelInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int friendShipId) {
         DBUser subject = userService.get(jwt.getClaim("sub"));
         FriendShip friendShip = friendShipService.get(friendShipId);
         if(friendShip.getSender().getId() == subject.getId()) {
-            friendShipService.cancel(friendShip);
-            return new ResponseEntity<>("invitation cancel successfully", HttpStatus.OK);
+            DBUser canceledReceiver = friendShipService.cancel(friendShip);
+            if(null != canceledReceiver)
+                return new ResponseEntity<>( canceledReceiver, HttpStatus.OK);
         }
-        return new ResponseEntity<>("You are not allowed to cancel this invitation", HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>("Invitation not canceled", HttpStatus.BAD_REQUEST);
     }
 }

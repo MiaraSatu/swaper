@@ -37,7 +37,7 @@ public class DBUserController {
     public Map<String, Object> getNotFriends(@AuthenticationPrincipal Jwt jwt, @Param("page") Integer page) {
         long limit = 10L;
         DBUser subject = userService.get(jwt.getClaim("sub"));
-        return userService.getPaginedNotFriends(subject, "/api/users/suggestions", page, limit);
+        return userService.getPaginedSuggestions(subject, "/api/users/suggestions", page, limit);
     }
 
     @GetMapping("/discussers/search")

@@ -12,11 +12,8 @@ public class FriendShip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private boolean isAccepted = false;
-    private boolean isRefused = false;
     private String invitationText;
-    private String refusalText;
     private boolean isInvitationSeen = false;
-    private boolean isRefusalSeen = false;
     private Date createdAt;
     private Date updatedAt;
     @ManyToOne
@@ -40,14 +37,6 @@ public class FriendShip {
         isAccepted = accepted;
     }
 
-    public boolean isRefused() {
-        return isRefused;
-    }
-
-    public void setRefused(boolean refused) {
-        isRefused = refused;
-    }
-
     public String getInvitationText() {
         return invitationText;
     }
@@ -56,28 +45,12 @@ public class FriendShip {
         this.invitationText = invitationText;
     }
 
-    public String getRefusalText() {
-        return refusalText;
-    }
-
-    public void setRefusalText(String refusalText) {
-        this.refusalText = refusalText;
-    }
-
     public boolean isInvitationSeen() {
         return isInvitationSeen;
     }
 
     public void setInvitationSeen(boolean invitationSeen) {
         isInvitationSeen = invitationSeen;
-    }
-
-    public boolean isRefusalSeen() {
-        return isRefusalSeen;
-    }
-
-    public void setRefusalSeen(boolean refusalSeen) {
-        isRefusalSeen = refusalSeen;
     }
 
     public DBUser getSender() {

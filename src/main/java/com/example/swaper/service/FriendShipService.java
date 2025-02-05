@@ -19,6 +19,9 @@ public class FriendShipService {
     @Autowired
     private PaginatorService<FriendShip> friendShipPaginator;
 
+    @Autowired
+    private DBUserService userService;
+
     public FriendShip get(int id) {
         return friendShipRepository.findById(id).get();
     }
@@ -35,37 +38,55 @@ public class FriendShipService {
             friendShip.setCreatedAt(Date.from(Instant.now()));
             friendShip.setUpdatedAt(Date.from(Instant.now()));
             friendShip.setInvitationText(invitationText);
+            // complete information
+            receiver.setFriendStatus("sent");
             friendShipRepository.save(friendShip);
             return friendShip;
         }
         return null;
     }
 
-    public void accept(DBUser subject, FriendShip friendShip) {
+    public FriendShip accept(DBUser subject, FriendShip friendShip) {
         if(friendShip.getReceiver().getId() == subject.getId()) {
             friendShip.setAccepted(true);
             friendShip.setUpdatedAt(Date.from(Instant.now()));
             friendShipRepository.save(friendShip);
+            // complete sender information
+            DBUser sender = friendShip.getSender();
+            sender.setFriendStatus("friend");
+            return friendShip;
         }
+        return null;
     }
 
-    public void refuse(DBUser subject, FriendShip friendShip, String refusalText) {
+    public DBUser refuse(DBUser subject, FriendShip friendShip) {
         if(friendShip.getReceiver().getId() == subject.getId() && !friendShip.isAccepted()) {
-            friendShip.setRefused(true);
-            friendShip.setRefusalText(refusalText);
-            friendShip.setUpdatedAt(Date.from(Instant.now()));
-            friendShipRepository.save(friendShip);
+            DBUser sender = friendShip.getSender();
+            friendShipRepository.delete(friendShip);
+            // complete sender information
+            sender.setFriendStatus("none");
+            return sender;
         }
+        return null;
     }
 
-    public void cancel(FriendShip friendShip) {
-        if(!friendShip.isRefused() && !friendShip.isAccepted()) {
+    public DBUser cancel(FriendShip friendShip) {
+        if(!friendShip.isAccepted()) {
+            DBUser receiver = friendShip.getReceiver();
+            // complete receiver information
+            receiver.setFriendStatus("none");
             friendShipRepository.delete(friendShip);
+            return receiver;
         }
+        return null;
     }
 
     public List<FriendShip> getFriendShipRelatedTo(DBUser subject) {
-        return friendShipRepository.findBySenderOrReceiverAndIsAccepted(subject, subject, true);
+        return friendShipRepository.findAllByUser(subject);
+    }
+
+    public List<FriendShip> getAcceptedFriendShipRelatedTo(DBUser subject) {
+        return friendShipRepository.findAcceptedByUser(subject);
     }
 
     public List<FriendShip> searchByUserName(String keyword, DBUser subject) {
@@ -76,18 +97,22 @@ public class FriendShipService {
         List<FriendShip> invitations = sent
                 ? friendShipRepository.findBySenderAndIsAccepted(subject, false)
                 : friendShipRepository.findByReceiverAndIsAccepted(subject, false);
-        invitations = invitations.stream().sorted((e1, e2) -> Long.compare(e2.getCreatedAt().getTime(), e1.getCreatedAt().getTime())).toList();
-        return friendShipPaginator.paginate(invitations, baseUrl, page, limit);
-    }
-
-    public Map<String, Object> getPaginedRefusedInvitation(DBUser subject, String baseUrl, Integer page, long limit) {
-        List<FriendShip> invitations = friendShipRepository.findBySenderAndIsRefused(subject, true);
-        invitations = invitations.stream().sorted((e1, e2) -> Long.compare(e2.getUpdatedAt().getTime(), e1.getUpdatedAt().getTime())).toList();
+        invitations = invitations
+                .stream()
+                .sorted((e1, e2) -> Long.compare(e2.getCreatedAt().getTime(), e1.getCreatedAt().getTime()))
+                .peek(inv -> this.complete(inv, subject))
+                .toList();
         return friendShipPaginator.paginate(invitations, baseUrl, page, limit);
     }
 
     public boolean checkFriendShip(DBUser user1, DBUser user2) {
         return null != get(user1, user2);
+    }
+
+    public void complete(FriendShip friendShip, DBUser currentUser) {
+        DBUser sender = friendShip.getSender(), receiver = friendShip.getReceiver();
+        userService.complete(sender, currentUser);
+        userService.complete(receiver, currentUser);
     }
 
 }

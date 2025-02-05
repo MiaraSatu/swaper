@@ -15,6 +15,7 @@ public class DBUserService {
     private DBUserRepository userRepo;
 
     @Autowired
+    @Lazy
     private FriendShipService friendShipService;
 
     @Autowired
@@ -60,9 +61,10 @@ public class DBUserService {
     }
 
     public List<DBUser> getFriends(DBUser subject) {
-        List<FriendShip> friendShips = friendShipService.getFriendShipRelatedTo(subject)
+        List<FriendShip> friendShips = friendShipService.getAcceptedFriendShipRelatedTo(subject)
             .stream()
             .sorted((e1, e2) -> Long.compare(e2.getUpdatedAt().getTime() ,e1.getUpdatedAt().getTime()))
+            .peek(fs -> friendShipService.complete(fs, subject))
             .toList();
         List<DBUser> friends = new ArrayList<>();
         for (FriendShip friendShip : friendShips) {
@@ -74,11 +76,21 @@ public class DBUserService {
         return friends;
     }
 
-    public List<DBUser> getNotFriends(DBUser subject) {
-        List<DBUser> friends = getFriends(subject);
-        List<DBUser> notFriends = all();
-        notFriends = notFriends.stream().filter(user -> !friends.contains(user) && user != subject).toList();
-        return notFriends;
+    public List<DBUser> getSuggestions(DBUser subject) {
+        List<DBUser> related = friendShipService.getFriendShipRelatedTo(subject)
+                .stream()
+                .map(friendShip -> {
+                    if(friendShip.getSender().getId() == subject.getId()) return friendShip.getReceiver();
+                    return friendShip.getSender();
+                })
+                .toList();
+        List<DBUser> suggestions = all();
+        suggestions = suggestions
+                .stream()
+                .filter(user -> !related.contains(user) && user != subject)
+                .peek(nf -> this.complete(nf, subject))
+                .toList();
+        return suggestions;
     }
 
     public Map<String, Object> getPaginedFriends(DBUser subject, String baseUrl, Integer page, long limit) {
@@ -86,8 +98,8 @@ public class DBUserService {
         return paginatorService.paginate(friends, baseUrl, page, limit);
     }
 
-    public Map<String, Object> getPaginedNotFriends(DBUser subject, String baseUrl, Integer page, long limit) {
-        List<DBUser> notFriends = this.getNotFriends(subject);
+    public Map<String, Object> getPaginedSuggestions(DBUser subject, String baseUrl, Integer page, long limit) {
+        List<DBUser> notFriends = this.getSuggestions(subject);
         return paginatorService.paginate(notFriends, baseUrl, page, limit);
     }
 
