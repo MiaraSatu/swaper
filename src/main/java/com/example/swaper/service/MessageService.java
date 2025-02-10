@@ -53,7 +53,25 @@ public class MessageService {
         }
         // trier par order de la date de création les messages
         messages = messages.stream().sorted((e1, e2) -> Long.compare(e2.getCreatedAt().getTime(), e1.getCreatedAt().getTime())).toList();
-        return messagePaginatorService.paginate(messages, baseUrl,page, limit);
+        Map<String, Object> paginedData = messagePaginatorService.paginate(messages, baseUrl,page, limit);
+        List<Message> paginedMessages = (List<Message>)paginedData.get("data");
+        paginedData.put("data", paginedMessages.stream().map(message -> {
+            if(message.getSender().getId() == subject.getId()) return message;
+            // List<Message> unchecked = messageRepository.getUncheckedBySender(message.getSender(), subject);
+            List<Message> unchecked = messageRepository.findBySenderAndReceiverAndIsChecked(message.getSender(), subject, false);
+            // check messages
+            if(!unchecked.isEmpty()) {
+                message.setUncheckedCount(unchecked.size());
+                unchecked.forEach(ucMessage -> {
+                    ucMessage.setChecked(true);
+                    messageRepository.save(ucMessage);
+                });
+            }
+            // count unread messages
+            message.setUnreadCount(messageRepository.countBySenderAndReceiverAndIsSeen(message.getSender(), subject, false));
+            return message;
+        }).toList());
+        return paginedData;
     }
 
     public Message getLastMessageExchanged(DBUser subject, DBUser friend) {
@@ -63,8 +81,19 @@ public class MessageService {
     public Map<String, Object> getPaginedMessagesExchanged(DBUser subject, String type, int receiverId, String baseUrl, Integer page, long limit) {
         if(type.equals("sample")) {
             DBUser friend = userService.get(receiverId);
-            List<Message> messages = messageRepository.findBySenderAndReceiverOrSenderAndReceiverOrderByCreatedAtDesc(subject, friend, friend, subject);
-            return messagePaginatorService.paginate(messages, baseUrl, page, limit);
+            List<Message> messages = messageRepository.findBySenderAndReceiverOrderByCreatedAtDesc(subject, friend);
+            Map<String, Object> paginedData = messagePaginatorService.paginate(messages, baseUrl, page, limit);
+            List<Message> paginedMessages = (List<Message>)(paginedData.get("data"));
+            paginedData.put("data", paginedMessages.stream().peek(pMessage -> {
+                if(pMessage.getSender().getId() != subject.getId()) {
+                    List<Message> unseen = messageRepository.findBySenderAndReceiverAndIsSeen(pMessage.getSender(), subject, false);
+                    unseen.forEach(usMessage -> {
+                        usMessage.setSeen(true);
+                        messageRepository.save(usMessage);
+                    });
+                }
+            }).toList());
+            return paginedData;
         } else if(type.equals("inBox")) {
             Box box = boxService.get(receiverId);
             List<Message> messages = messageRepository.findBySenderAndBoxReceiverOrderByCreatedAtDesc(subject, box);

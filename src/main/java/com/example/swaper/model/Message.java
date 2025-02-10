@@ -16,6 +16,7 @@ public class Message {
     private Date createdAt;
     private Date updatedAt;
     private boolean isSeen = false;
+    private boolean isChecked = false;
     @ManyToOne
     @JoinColumn(nullable = false)
     private DBUser sender;
@@ -25,6 +26,11 @@ public class Message {
     private Box boxReceiver;
     @ManyToOne
     private Message replyTo;
+    // only needs in discussion list
+    @Transient
+    private int uncheckedCount = 0;
+    @Transient
+    private int unreadCount = 0;
 
     public int getId() {
         return id;
@@ -74,6 +80,14 @@ public class Message {
         isSeen = seen;
     }
 
+    public boolean isChecked() {
+        return isChecked;
+    }
+
+    public void setChecked(boolean checked) {
+        isChecked = checked;
+    }
+
     public DBUser getSender() {
         return sender;
     }
@@ -104,5 +118,21 @@ public class Message {
 
     public void setReplyTo(Message replyTo) {
         this.replyTo = replyTo;
+    }
+
+    public int getUncheckedCount() {
+        return uncheckedCount;
+    }
+
+    public void setUncheckedCount(int uncheckedCount) {
+        this.uncheckedCount = uncheckedCount;
+    }
+
+    public int getUnreadCount() {
+        return unreadCount;
+    }
+
+    public void setUnreadCount(int unreadCount) {
+        this.unreadCount = unreadCount;
     }
 }
