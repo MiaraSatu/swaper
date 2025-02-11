@@ -3,10 +3,7 @@ package com.example.swaper.controller;
 import com.example.swaper.model.Box;
 import com.example.swaper.model.DBUser;
 import com.example.swaper.model.Message;
-import com.example.swaper.service.BoxService;
-import com.example.swaper.service.DBUserService;
-import com.example.swaper.service.MemberShipService;
-import com.example.swaper.service.MessageService;
+import com.example.swaper.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
@@ -33,11 +30,23 @@ public class MessageController {
     @Autowired
     private MemberShipService memberShipService;
 
+    @Autowired
+    private FriendShipService friendShipService;
+
     @GetMapping("/discussions")
     public Map<String, Object> getDiscussions(@AuthenticationPrincipal Jwt jwt, @Param("page") Integer page) {
         long listLimit = 10L;
         DBUser subject = userService.get(jwt.getClaim("sub"));
         return messageService.getPaginedDiscussions(subject, "/api/discussions", page, listLimit);
+    }
+
+    @GetMapping("/discussion/{id}")
+    public ResponseEntity<Object> getDiscussion(@AuthenticationPrincipal Jwt jwt, @PathVariable int id) {
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        DBUser friend = userService.get(id);
+        if(friend == null) return new ResponseEntity<>("Discussion #"+id+" not found", HttpStatus.NOT_FOUND);
+        if(friendShipService.checkFriendShip(subject, friend)) return new ResponseEntity<>(friend, HttpStatus.OK);
+        return new ResponseEntity<>("No discussion with #"+id, HttpStatus.FORBIDDEN);
     }
 
     @PostMapping("/message/{receiverId}/{isBox}")
