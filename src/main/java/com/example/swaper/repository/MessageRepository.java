@@ -22,4 +22,10 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
     @Query("SELECT m FROM Message m WHERE (m.sender = :sender AND m.receiver = :receiver) OR (m.sender = :receiver AND m.receiver = :sender)" +
             " ORDER BY m.createdAt DESC")
     List<Message> findBySenderAndReceiverOrderByCreatedAtDesc(@Param("sender") DBUser sender, @Param("receiver") DBUser Receiver);
+
+    @Query("SELECT COUNT(u) FROM DBUser u JOIN Message m ON (m.sender = u AND m.receiver = :receiver) WHERE m.isSeen = false")
+    Integer countUnreadByReceiver(@Param("receiver") DBUser receiver);
+
+    @Query("SELECT COUNT(u) FROM DBUser u RIGHT JOIN Message m ON (m.sender = u) WHERE m.receiver = :receiver AND m.isChecked = false")
+    Integer countUncheckedByReceiver(@Param("receiver") DBUser receiver);
 }

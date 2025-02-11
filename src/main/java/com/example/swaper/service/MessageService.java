@@ -132,6 +132,16 @@ public class MessageService {
         return true;
     }
 
+    public int countUnreadDiscussion(DBUser subject) {
+        Integer count = messageRepository.countUnreadByReceiver(subject);
+        return (count != null) ? count : 0;
+    }
+
+    public int countUncheckedDiscussion(DBUser subject) {
+        Integer count = messageRepository.countUncheckedByReceiver(subject);
+        return (count != null) ? count : 0;
+    }
+
     private boolean checkMessageParticiper(Message message, DBUser partant1, DBUser partant2) {
         return (message.getSender().getId() == partant1.getId() && message.getReceiver().getId() == partant2.getId())
                 || (message.getSender().getId() == partant2.getId() && message.getReceiver().getId() == partant1.getId());

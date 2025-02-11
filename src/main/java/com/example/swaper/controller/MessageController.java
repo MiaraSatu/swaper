@@ -58,4 +58,19 @@ public class MessageController {
         Map<String, Object> result = messageService.getPaginedMessagesExchanged(subject, type, receiverId, "/api/messages/"+receiverId+"/"+(isBox?1:0), page, limit);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+    // to verify unread count
+    @GetMapping("/discussions/unread")
+    public ResponseEntity<Object> countUnreadNewMessage(@AuthenticationPrincipal Jwt jwt) {
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        return new ResponseEntity<>(messageService.countUnreadDiscussion(subject), HttpStatus.OK);
+    }
+
+    // to verify unchecked count
+    @GetMapping("/discussions/unchecked")
+    public ResponseEntity<Object> countUncheckedMessage(@AuthenticationPrincipal Jwt jwt) {
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        return new ResponseEntity<>(messageService.countUncheckedDiscussion(subject), HttpStatus.OK);
+    }
+
 }
