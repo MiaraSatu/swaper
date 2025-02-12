@@ -81,6 +81,16 @@ public class FriendShipService {
         return null;
     }
 
+    public DBUser cancel(DBUser subject, DBUser user) {
+        FriendShip friendShip = this.get(subject, user);
+        if(null != friendShip) {
+            if(!friendShip.isAccepted()) {
+                return this.cancel(friendShip);
+            }
+        }
+        return null;
+    }
+
     public List<FriendShip> getFriendShipRelatedTo(DBUser subject) {
         return friendShipRepository.findAllByUser(subject);
     }

@@ -91,4 +91,14 @@ public class FriendShipController {
         }
         return new ResponseEntity<>("Invitation not canceled", HttpStatus.BAD_REQUEST);
     }
+
+    @GetMapping("/user/{userId}/invitation/cancel")
+    public ResponseEntity<Object> cancelInvitationByUserId(@AuthenticationPrincipal Jwt jwt, @PathVariable int userId) {
+        DBUser subject = userService.get(jwt.getClaim("sub")),
+                friend = userService.get(userId);
+        if(null != friendShipService.cancel(subject, friend)) {
+            return new ResponseEntity<>(friend, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Invitation not canceled", HttpStatus.BAD_REQUEST);
+    }
 }
