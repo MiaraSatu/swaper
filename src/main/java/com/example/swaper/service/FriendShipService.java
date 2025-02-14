@@ -103,6 +103,10 @@ public class FriendShipService {
         return friendShipRepository.searchByUserName(keyword, subject);
     }
 
+    public List<FriendShip> searchFriendByUserName(String keyword, DBUser subject) {
+        return friendShipRepository.searchFriendByUserName(keyword, subject);
+    }
+
     public Map<String, Object> getPaginedInvitation(boolean sent, DBUser subject, String baseUrl, Integer page, long limit) {
         List<FriendShip> invitations = sent
                 ? friendShipRepository.findBySenderAndIsAccepted(subject, false)

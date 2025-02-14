@@ -104,7 +104,7 @@ public class DBUserService {
     }
 
     public List<DBUser> searchDiscusser(String kw, DBUser subject) {
-        return friendShipService.searchByUserName(kw, subject)
+        return friendShipService.searchFriendByUserName(kw, subject)
             .stream().map(friendShip -> {
                 DBUser sender = friendShip.getSender();
                 if(sender.getId() == subject.getId())

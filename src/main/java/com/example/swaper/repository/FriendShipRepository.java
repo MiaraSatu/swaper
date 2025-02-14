@@ -27,4 +27,9 @@ public interface FriendShipRepository extends JpaRepository<FriendShip, Integer>
         "OR (f.receiver = u AND f.sender = :subject) WHERE u.name LIKE CONCAT('%', :kw, '%')"
     )
     public List<FriendShip> searchByUserName(@Param("kw") String kw, @Param("subject") DBUser subject);
+
+    @Query("SELECT f FROM FriendShip f JOIN DBUser u ON (f.sender = u AND f.receiver = :subject)"+
+        " OR (f.receiver = u AND f.sender = :subject) WHERE u.name LIKE CONCAT('%',:kw,'%') AND f.isAccepted = true"
+    )
+    public List<FriendShip> searchFriendByUserName(@Param("kw") String kw, @Param("subject") DBUser subject);
 }
