@@ -113,6 +113,12 @@ public class DBUserService {
             }).toList();
     }
 
+    public List<DBUser> search(String kw, DBUser subject) {
+        List<DBUser> results = userRepo.searchByName(kw, subject);
+        this.complete(results, subject);
+        return results;
+    }
+
     public List<DBUser> complete(List<DBUser> users, DBUser currentUser) {
         return users.stream().map(u -> {
             this.complete(u, currentUser);

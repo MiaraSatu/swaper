@@ -46,6 +46,12 @@ public class DBUserController {
         return userService.searchDiscusser(kw, subject);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Object> searchUser(@AuthenticationPrincipal Jwt jwt, @Param("kw") String kw) {
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        return new ResponseEntity<>(userService.search(kw, subject), HttpStatus.OK);
+    }
+
     @GetMapping("/{userId}/friends")
     public ResponseEntity<Object> getFriends(@PathVariable int userId, @Param("page") Integer page) {
         long limit = 10L;
