@@ -91,6 +91,13 @@ public class FriendShipService {
         return null;
     }
 
+    public DBUser remove(DBUser subject, DBUser user) {
+        FriendShip friendShip = this.get(subject, user);
+        if(null == friendShip || !friendShip.isAccepted()) return null;
+        friendShipRepository.delete(friendShip);
+        return user;
+    }
+
     public List<FriendShip> getFriendShipRelatedTo(DBUser subject) {
         return friendShipRepository.findAllByUser(subject);
     }

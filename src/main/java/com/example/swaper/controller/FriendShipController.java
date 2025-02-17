@@ -25,7 +25,7 @@ public class FriendShipController {
     private DBUserService userService;
 
     @GetMapping("/invitations/received")
-    public Map<String, Object> getReceivedInvitation(@AuthenticationPrincipal Jwt jwt,  @Param("page") Integer page) {
+    public Map<String, Object> getReceivedInvitations(@AuthenticationPrincipal Jwt jwt,  @Param("page") Integer page) {
         long limit = 10L;
         DBUser subject = userService.get(jwt.getClaim("sub"));
         Map<String, Object> pagined = friendShipService.getPaginedInvitation(false, subject, "/api/invitations/received", page, limit);
@@ -34,6 +34,16 @@ public class FriendShipController {
             return fs;
         }).toList());
         return pagined;
+    }
+
+    @GetMapping("/invitation/sender/{senderId}")
+    public ResponseEntity<Object> getReceivedInvitation(@AuthenticationPrincipal Jwt jwt, @PathVariable int senderId) {
+        DBUser subject = userService.get(jwt.getClaim("sub")),
+                sender = userService.get(senderId);
+        if(null == sender) return new ResponseEntity<>("Request not found", HttpStatus.NOT_FOUND);
+        FriendShip friendShip = friendShipService.get(subject, sender);
+        if(friendShip.isAccepted() || friendShip.getSender().getId() != senderId) return new ResponseEntity<>("Request not found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(friendShip, HttpStatus.OK);
     }
 
     @GetMapping("/invitations/sent")
@@ -100,5 +110,14 @@ public class FriendShipController {
             return new ResponseEntity<>(friend, HttpStatus.OK);
         }
         return new ResponseEntity<>("Invitation not canceled", HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/user/{userId}/remove")
+    public ResponseEntity<Object> removeFriend(@AuthenticationPrincipal Jwt jwt, @PathVariable int userId) {
+        DBUser subject = userService.get(jwt.getClaim("sub")),
+                friend = userService.get(userId);
+        if(null == friend) return new ResponseEntity<>("Friend not found", HttpStatus.NOT_FOUND);
+        if(null == friendShipService.remove(subject, friend)) return new ResponseEntity<>("Not removed", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(friend, HttpStatus.OK);
     }
 }
