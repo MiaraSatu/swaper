@@ -19,8 +19,16 @@ public class BoxService {
     @Autowired
     private MemberShipRepository memberShipRepository;
 
+    @Autowired
+    private MemberShipService memberShipService;
+
     public Box get(int id) {
         return boxRepository.findById(id).get();
+    }
+
+    public List<Box> get(DBUser user) {
+        List<MemberShip> memberShips = memberShipService.get(user);
+        return memberShips.stream().map(MemberShip::getBox).toList();
     }
 
     public void add(Box box, DBUser admin) {

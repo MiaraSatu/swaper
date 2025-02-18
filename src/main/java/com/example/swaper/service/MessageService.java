@@ -51,6 +51,13 @@ public class MessageService {
             Message lastMessage = this.getLastMessageExchanged(subject, friend);
             if(lastMessage != null) messages.add(lastMessage);
         }
+
+        // boxes discussions
+        List<Box> boxes = boxService.get(subject);
+        for(Box box: boxes) {
+            Message lastMessage = messageRepository.findFirstByBoxReceiverOrderByCreatedAtDesc(box);
+            if(lastMessage != null) messages.add(lastMessage);
+        }
         // trier par order de la date de création les messages
         messages = messages.stream().sorted((e1, e2) -> Long.compare(e2.getCreatedAt().getTime(), e1.getCreatedAt().getTime())).toList();
         Map<String, Object> paginedData = messagePaginatorService.paginate(messages, baseUrl,page, limit);

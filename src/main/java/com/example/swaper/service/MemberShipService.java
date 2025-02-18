@@ -19,6 +19,10 @@ public class MemberShipService {
         return memberShipRepository.findAll();
     }
 
+    public List<MemberShip> get(DBUser owner) {
+        return memberShipRepository.findByOwner(owner);
+    }
+
     public MemberShip get(Box box, DBUser member) {
         return memberShipRepository.findFirstByBoxAndOwner(box, member);
     }
