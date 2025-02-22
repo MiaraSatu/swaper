@@ -1,5 +1,6 @@
 package com.example.swaper.service;
 
+import com.example.swaper.model.Box;
 import com.example.swaper.model.DBUser;
 import com.example.swaper.model.FriendShip;
 import com.example.swaper.repository.DBUserRepository;
@@ -144,6 +145,10 @@ public class DBUserService {
         } else {
             user.setFriendStatus("none");
         }
+    }
+
+    public List<DBUser> getBoxMembers(Box box) {
+        return userRepo.findByBox(box);
     }
 
 }

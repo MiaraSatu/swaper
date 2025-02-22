@@ -2,8 +2,10 @@ package com.example.swaper.controller;
 
 import com.example.swaper.model.Box;
 import com.example.swaper.model.DBUser;
+import com.example.swaper.model.MemberShip;
 import com.example.swaper.service.BoxService;
 import com.example.swaper.service.DBUserService;
+import com.example.swaper.service.MemberShipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,9 @@ public class BoxController {
 
     @Autowired
     private BoxService boxService;
+
+    @Autowired
+    private MemberShipService memberShipService;
 
     @PostMapping("/box")
     public Box createBox(@AuthenticationPrincipal Jwt jwt, @RequestBody Box box) {
@@ -54,5 +59,15 @@ public class BoxController {
             return new ResponseEntity<>("Member removed successfully", HttpStatus.OK);
         }
         return new ResponseEntity<>("You are not allowed to remove the member from the box", HttpStatus.FORBIDDEN);
+    }
+
+    @GetMapping("/box/{boxId}/users")
+    public ResponseEntity<Object> getMembers(@AuthenticationPrincipal Jwt jwt, @PathVariable int boxId) {
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        Box box = boxService.get(boxId);
+        if(box == null) return new ResponseEntity<>("Box not found", HttpStatus.NOT_FOUND);
+        MemberShip memberShip = memberShipService.get(box, subject);
+        if(memberShip == null) return new ResponseEntity<>("Not allowed", HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(userService.getBoxMembers(box), HttpStatus.OK);
     }
 }
