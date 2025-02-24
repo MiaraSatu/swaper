@@ -40,12 +40,19 @@ public class MessageController {
         return messageService.getPaginedDiscussions(subject, "/api/discussions", page, listLimit);
     }
 
-    @GetMapping("/discussion/{id}")
-    public ResponseEntity<Object> getDiscussion(@AuthenticationPrincipal Jwt jwt, @PathVariable int id) {
+    @GetMapping("/discussion/{id}/{isBox}")
+    public ResponseEntity<Object> getDiscussion(@AuthenticationPrincipal Jwt jwt, @PathVariable int id, @PathVariable boolean isBox) {
         DBUser subject = userService.get(jwt.getClaim("sub"));
-        DBUser friend = userService.get(id);
-        if(friend == null) return new ResponseEntity<>("Discussion #"+id+" not found", HttpStatus.NOT_FOUND);
-        if(friendShipService.checkFriendShip(subject, friend)) return new ResponseEntity<>(friend, HttpStatus.OK);
+        if(!isBox) {
+            DBUser friend = userService.get(id);
+            if(friend == null) return new ResponseEntity<>("Discussion #"+id+" not found", HttpStatus.NOT_FOUND);
+            if(friendShipService.checkFriendShip(subject, friend)) return new ResponseEntity<>(friend, HttpStatus.OK);
+        } else {
+            // isBox case
+            Box box = boxService.get(id);
+            if(box == null) return new ResponseEntity<>("Discussion #"+id+" not found", HttpStatus.NOT_FOUND);
+            if(memberShipService.checkMemberShip(box, subject)) return new ResponseEntity<>(box, HttpStatus.OK);
+        }
         return new ResponseEntity<>("No discussion with #"+id, HttpStatus.FORBIDDEN);
     }
 

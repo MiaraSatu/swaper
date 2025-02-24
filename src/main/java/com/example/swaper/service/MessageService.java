@@ -103,7 +103,7 @@ public class MessageService {
             return paginedData;
         } else if(type.equals("inBox")) {
             Box box = boxService.get(receiverId);
-            List<Message> messages = messageRepository.findBySenderAndBoxReceiverOrderByCreatedAtDesc(subject, box);
+            List<Message> messages = messageRepository.findByBoxReceiverOrderByCreatedAtDesc(box);
             return messagePaginatorService.paginate(messages, baseUrl, page, limit);
         }
         return null;

@@ -26,4 +26,8 @@ public class MemberShipService {
     public MemberShip get(Box box, DBUser member) {
         return memberShipRepository.findFirstByBoxAndOwner(box, member);
     }
+
+    public boolean checkMemberShip(Box box, DBUser subject) {
+        return null != this.get(box, subject);
+    }
 }
