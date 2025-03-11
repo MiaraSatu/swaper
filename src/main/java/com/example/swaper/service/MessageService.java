@@ -139,9 +139,21 @@ public class MessageService {
         return true;
     }
 
+    public List<Message> getUnreadDiscussion(DBUser subject) {
+        return messageRepository.getUnReadMessage(subject);
+    }
+
     public int countUnreadDiscussion(DBUser subject) {
         Integer count = messageRepository.countUnreadByReceiver(subject);
         return (count != null) ? count : 0;
+    }
+
+    public int countUnreadDiscussion(DBUser receiver, DBUser sender) {
+        return messageRepository.countBySenderAndReceiverAndIsSeen(sender, receiver, false);
+    }
+
+    public List<Message> getUncheckedDiscussion(DBUser subject) {
+        return messageRepository.getUncheckedMessage(subject);
     }
 
     public int countUncheckedDiscussion(DBUser subject) {

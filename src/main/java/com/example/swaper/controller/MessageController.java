@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,9 @@ public class MessageController {
 
     @Autowired
     private FriendShipService friendShipService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/discussions")
     public Map<String, Object> getDiscussions(@AuthenticationPrincipal Jwt jwt, @Param("page") Integer page) {
@@ -61,6 +65,7 @@ public class MessageController {
         DBUser sender = userService.get(jwt.getClaim("sub"));
         String messageType = isBox ? "inbox" : "sample";
         if(messageService.send(message, sender, receiverId, messageType, replyTo)) {
+            if(!isBox) messagingTemplate.convertAndSend("/user/message/"+receiverId, message);
             return new ResponseEntity<>(message, HttpStatus.OK);
         }
         return new ResponseEntity<>("Message not sent", HttpStatus.BAD_REQUEST);
@@ -74,19 +79,4 @@ public class MessageController {
         Map<String, Object> result = messageService.getPaginedMessagesExchanged(subject, type, receiverId, "/api/messages/"+receiverId+"/"+(isBox?1:0), page, limit);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-
-    // to verify unread count
-    @GetMapping("/discussions/unread")
-    public ResponseEntity<Object> countUnreadNewMessage(@AuthenticationPrincipal Jwt jwt) {
-        DBUser subject = userService.get(jwt.getClaim("sub"));
-        return new ResponseEntity<>(messageService.countUnreadDiscussion(subject), HttpStatus.OK);
-    }
-
-    // to verify unchecked count
-    @GetMapping("/discussions/unchecked")
-    public ResponseEntity<Object> countUncheckedMessage(@AuthenticationPrincipal Jwt jwt) {
-        DBUser subject = userService.get(jwt.getClaim("sub"));
-        return new ResponseEntity<>(messageService.countUncheckedDiscussion(subject), HttpStatus.OK);
-    }
-
 }

@@ -42,6 +42,14 @@ public class DBUserService {
         return userRepo.findById(id).get();
     }
 
+    public boolean update(DBUser edited) {
+        if(edited.getName().isBlank() || edited.getEmail().isBlank()) {
+            return false;
+        }
+        userRepo.save(edited);
+        return true;
+    }
+
     public List<DBUser> getMostFrequentedFriends(DBUser subject) {
         List<DBUser> friends = this.getFriends(subject);
         List<DBUser> frequentedFriends;

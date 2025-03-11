@@ -24,8 +24,14 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
             " ORDER BY m.createdAt DESC")
     List<Message> findBySenderAndReceiverOrderByCreatedAtDesc(@Param("sender") DBUser sender, @Param("receiver") DBUser Receiver);
 
+    @Query("SELECT m FROM Message m WHERE m.receiver = :receiver AND m.isSeen = false")
+    List<Message> getUnReadMessage(@Param("receiver") DBUser receiver);
+
     @Query("SELECT COUNT(u) FROM DBUser u JOIN Message m ON (m.sender = u AND m.receiver = :receiver) WHERE m.isSeen = false")
     Integer countUnreadByReceiver(@Param("receiver") DBUser receiver);
+
+    @Query("SELECT m FROM Message m JOIN DBUser u ON m.sender = u WHERE m.receiver = :receiver AND m.isChecked = false")
+    List<Message> getUncheckedMessage(@Param("receiver") DBUser receiver);
 
     @Query("SELECT COUNT(u) FROM DBUser u RIGHT JOIN Message m ON (m.sender = u) WHERE m.receiver = :receiver AND m.isChecked = false")
     Integer countUncheckedByReceiver(@Param("receiver") DBUser receiver);

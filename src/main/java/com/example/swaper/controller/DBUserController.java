@@ -20,12 +20,22 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/users")
 public class DBUserController {
     @Autowired
     private DBUserService userService;
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<Object> getUser(@AuthenticationPrincipal Jwt jwt, @PathVariable int userId) {
+        DBUser user = userService.get(userId),
+                subject = userService.get(jwt.getClaim("sub"));
+        userService.complete(user, subject);
+        if(user == null) return new ResponseEntity<>("User #"+userId+" not found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
 
     @GetMapping("/discussers")
     public List<DBUser> getBestFriends(@AuthenticationPrincipal Jwt jwt) {
@@ -63,6 +73,14 @@ public class DBUserController {
         return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
     }
 
+    @PutMapping("/")
+    public ResponseEntity<Object> editUser(@AuthenticationPrincipal Jwt jwt, @RequestBody DBUser edited) {
+        DBUser subject = userService.get(jwt.getClaim("sub"));
+        if(edited.getId() != subject.getId()) return new ResponseEntity<>("Not allowed", HttpStatus.FORBIDDEN);
+        if(!userService.update(edited)) return new ResponseEntity<>("Invalid user data", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(edited, HttpStatus.OK);
+    }
+
     @PostMapping("/picture")
     public ResponseEntity<Object> setProfilPicture(@AuthenticationPrincipal Jwt jwt, @RequestParam("file")MultipartFile file) {
         DBUser subject = userService.get(jwt.getClaim("sub"));
@@ -84,6 +102,6 @@ public class DBUserController {
         String fileName = file.getOriginalFilename();
         Path filePath = uploadPath.resolve(fileName);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        return filePath.toString();
+        return "/user/"+fileName;
     }
 }

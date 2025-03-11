@@ -42,7 +42,8 @@ public class SpringSecurityConfig {
                     auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     auth.requestMatchers("/login").permitAll();
                     auth.requestMatchers("/register").permitAll();
-                    auth.anyRequest().authenticated();
+                    auth.requestMatchers("/api/**").authenticated();
+                    auth.anyRequest().permitAll();
                 })
                 .httpBasic(Customizer.withDefaults())
                 .build();
