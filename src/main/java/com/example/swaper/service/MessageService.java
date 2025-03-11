@@ -105,45 +105,40 @@ public class MessageService {
         return null;
     }
 
-    public boolean send(Message message, DBUser sender, int receiverId, String type, Integer replyToId) {
+    public boolean send(Message message, Message replyTo) {
+        String type = message.getType();
+        DBUser sender = message.getSender(), receiver = message.getReceiver();
+        Box boxReceiver = message.getBoxReceiver();
         if(type.equals("inbox")) {
-            Box boxReceiver = boxService.get(receiverId);
             if(null == memberShipService.get(boxReceiver, sender)) return false;
-            message.setBoxReceiver(boxReceiver);
-            if(null != replyToId) {
-                Message parent = this.get(replyToId);
-                if(parent.getBoxReceiver().getId() == receiverId) message.setReplyTo(parent);
+            if(null != replyTo) {
+                if(replyTo.getBoxReceiver().getId() == boxReceiver.getId()) message.setReplyTo(replyTo);
             }
-
         }
         else if(type.equals("sample")) {
-            DBUser receiver = userService.get(receiverId);
             if(null == friendShipService.get(sender, receiver)) return false;
-            message.setReceiver(receiver);
-            if(null != replyToId) {
-                Message parent = this.get(replyToId);
-                if(checkMessageParticiper(parent, sender, receiver)) message.setReplyTo(parent);
+            if(null != replyTo) {
+                if(checkMessageParticiper(replyTo, sender, receiver)) message.setReplyTo(replyTo);
             }
         }
         else {
             return false;
         }
-        message.setType(type);
-        message.setSender(sender);
+        message.setCreatedAt(Date.from(Instant.now()));
         message.setCreatedAt(Date.from(Instant.now()));
         messageRepository.save(message);
         return true;
     }
 
-    public List<Message> getUnreadDiscussion(DBUser subject) {
+    public List<Message> getSeenDiscussion(DBUser subject) {
         return messageRepository.findUnseen(subject);
     }
 
-    public int countUnreadDiscussion(DBUser subject) {
+    public int countUnseenDiscussion(DBUser subject) {
         return messageRepository.countUnseen(subject);
     }
 
-    public int countUnreadDiscussion(DBUser receiver, DBUser sender) {
+    public int countUnseenDiscussion(DBUser receiver, DBUser sender) {
         return messageRepository.countUnseen(sender, receiver);
     }
 

@@ -56,11 +56,25 @@ public class MessageController {
     }
 
     @PostMapping("/message/{receiverId}/{isBox}")
-    public ResponseEntity<Object> sendMessage(@AuthenticationPrincipal Jwt jwt, @RequestBody Message message, @PathVariable int receiverId, @PathVariable boolean isBox, @Param("reply_to") Integer replyTo) {
+    public ResponseEntity<Object> sendMessage(@AuthenticationPrincipal Jwt jwt, @RequestBody Message message, @PathVariable int receiverId, @PathVariable boolean isBox, @Param("reply_to") Integer replyToId) {
         DBUser sender = userService.get(jwt.getClaim("sub"));
-        String messageType = isBox ? "inbox" : "sample";
-        if(messageService.send(message, sender, receiverId, messageType, replyTo)) {
-            if(!isBox) messagingTemplate.convertAndSend("/user/message/"+receiverId, message);
+        String type;
+        Message replyTo = replyToId != null ? messageService.get(replyToId) : null;
+        if(isBox) {
+            type = "inbox";
+            message.setBoxReceiver(boxService.get(receiverId));
+        } else {
+            type = "sample";
+            message.setReceiver(userService.get(receiverId));
+        }
+        message.setSender(sender);
+        message.setType(type);
+        message.setReplyTo(replyTo);
+        if(messageService.send(message, replyTo)) {
+            if(!isBox) {
+                message.setUnreadCount(messageService.countUnseenDiscussion(message.getReceiver(), sender));
+                messagingTemplate.convertAndSend("/user/message/" + receiverId, message);
+            }
             return new ResponseEntity<>(message, HttpStatus.OK);
         }
         return new ResponseEntity<>("Message not sent", HttpStatus.BAD_REQUEST);
