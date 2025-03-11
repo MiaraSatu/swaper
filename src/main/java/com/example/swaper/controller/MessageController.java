@@ -21,19 +21,14 @@ public class MessageController {
 
     @Autowired
     private MessageService messageService;
-
     @Autowired
     private DBUserService userService;
-
     @Autowired
     private BoxService boxService;
-
     @Autowired
     private MemberShipService memberShipService;
-
     @Autowired
     private FriendShipService friendShipService;
-
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 

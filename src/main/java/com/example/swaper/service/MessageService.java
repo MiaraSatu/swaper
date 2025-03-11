@@ -18,20 +18,15 @@ import java.util.Map;
 public class MessageService {
     @Autowired
     private MessageRepository messageRepository;
-
     @Autowired
     private PaginatorService<Message> messagePaginatorService;
-
     @Autowired
     @Lazy
     private DBUserService userService;
-
     @Autowired
     private MemberShipService memberShipService;
-
     @Autowired
     private FriendShipService friendShipService;
-
     @Autowired
     private BoxService boxService;
 
@@ -39,8 +34,8 @@ public class MessageService {
         return messageRepository.findById(id).get();
     }
 
-    public long countMessageExchanged(DBUser user1, DBUser user2) {
-        return messageRepository.countBySenderAndReceiverOrSenderAndReceiver(user1, user2, user2, user1);
+    public int countMessageExchanged(DBUser user1, DBUser user2) {
+        return messageRepository.count(user1, user2);
     }
 
     public Map<String, Object> getPaginedDiscussions(DBUser subject, String baseUrl, Integer page, long limit) {
@@ -55,7 +50,7 @@ public class MessageService {
         // boxes discussions
         List<Box> boxes = boxService.get(subject);
         for(Box box: boxes) {
-            Message lastMessage = messageRepository.findFirstByBoxReceiverOrderByCreatedAtDesc(box);
+            Message lastMessage = messageRepository.findFirst(box);
             if(lastMessage != null) messages.add(lastMessage);
         }
         // trier par order de la date de création les messages
@@ -65,7 +60,7 @@ public class MessageService {
         paginedData.put("data", paginedMessages.stream().map(message -> {
             if(message.getSender().getId() == subject.getId()) return message;
             // List<Message> unchecked = messageRepository.getUncheckedBySender(message.getSender(), subject);
-            List<Message> unchecked = messageRepository.findBySenderAndReceiverAndIsChecked(message.getSender(), subject, false);
+            List<Message> unchecked = messageRepository.findUnchecked(message.getSender(), subject);
             // check messages
             if(!unchecked.isEmpty()) {
                 message.setUncheckedCount(unchecked.size());
@@ -75,25 +70,26 @@ public class MessageService {
                 });
             }
             // count unread messages
-            message.setUnreadCount(messageRepository.countBySenderAndReceiverAndIsSeen(message.getSender(), subject, false));
+            message.setUnreadCount(messageRepository.countUnseen(message.getSender(), subject));
             return message;
         }).toList());
         return paginedData;
     }
 
     public Message getLastMessageExchanged(DBUser subject, DBUser friend) {
-        return messageRepository.findFirstBySenderAndReceiverOrSenderAndReceiverOrderByCreatedAtDesc(subject, friend, friend, subject);
+        return messageRepository.findFirst(subject, friend);
+        // return messageRepository.findFirstBySenderAndReceiverOrSenderAndReceiverOrderByCreatedAtDesc(subject, friend, friend, subject);
     }
 
     public Map<String, Object> getPaginedMessagesExchanged(DBUser subject, String type, int receiverId, String baseUrl, Integer page, long limit) {
         if(type.equals("sample")) {
             DBUser friend = userService.get(receiverId);
-            List<Message> messages = messageRepository.findBySenderAndReceiverOrderByCreatedAtDesc(subject, friend);
+            List<Message> messages = messageRepository.find(subject, friend);
             Map<String, Object> paginedData = messagePaginatorService.paginate(messages, baseUrl, page, limit);
             List<Message> paginedMessages = (List<Message>)(paginedData.get("data"));
             paginedData.put("data", paginedMessages.stream().peek(pMessage -> {
                 if(pMessage.getSender().getId() != subject.getId()) {
-                    List<Message> unseen = messageRepository.findBySenderAndReceiverAndIsSeen(pMessage.getSender(), subject, false);
+                    List<Message> unseen = messageRepository.findUnseen(pMessage.getSender(), subject);
                     unseen.forEach(usMessage -> {
                         usMessage.setSeen(true);
                         messageRepository.save(usMessage);
@@ -103,7 +99,7 @@ public class MessageService {
             return paginedData;
         } else if(type.equals("inBox")) {
             Box box = boxService.get(receiverId);
-            List<Message> messages = messageRepository.findByBoxReceiverOrderByCreatedAtDesc(box);
+            List<Message> messages = messageRepository.find(box);
             return messagePaginatorService.paginate(messages, baseUrl, page, limit);
         }
         return null;
@@ -140,25 +136,23 @@ public class MessageService {
     }
 
     public List<Message> getUnreadDiscussion(DBUser subject) {
-        return messageRepository.getUnReadMessage(subject);
+        return messageRepository.findUnseen(subject);
     }
 
     public int countUnreadDiscussion(DBUser subject) {
-        Integer count = messageRepository.countUnreadByReceiver(subject);
-        return (count != null) ? count : 0;
+        return messageRepository.countUnseen(subject);
     }
 
     public int countUnreadDiscussion(DBUser receiver, DBUser sender) {
-        return messageRepository.countBySenderAndReceiverAndIsSeen(sender, receiver, false);
+        return messageRepository.countUnseen(sender, receiver);
     }
 
     public List<Message> getUncheckedDiscussion(DBUser subject) {
-        return messageRepository.getUncheckedMessage(subject);
+        return messageRepository.findUnchecked(subject);
     }
 
     public int countUncheckedDiscussion(DBUser subject) {
-        Integer count = messageRepository.countUncheckedByReceiver(subject);
-        return (count != null) ? count : 0;
+        return messageRepository.countUnchecked(subject);
     }
 
     private boolean checkMessageParticiper(Message message, DBUser partant1, DBUser partant2) {

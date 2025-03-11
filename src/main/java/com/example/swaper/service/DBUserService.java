@@ -53,7 +53,7 @@ public class DBUserService {
     public List<DBUser> getMostFrequentedFriends(DBUser subject) {
         List<DBUser> friends = this.getFriends(subject);
         List<DBUser> frequentedFriends;
-        Map<DBUser, Long> messageStat = new HashMap<>();
+        Map<DBUser, Integer> messageStat = new HashMap<>();
         for(DBUser friend: friends) {
             messageStat.put(friend, messageService.countMessageExchanged(subject, friend));
         }
